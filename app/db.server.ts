@@ -9,12 +9,18 @@ declare global {
   var __mongooseConnection: typeof mongoose | undefined;
 }
 
-if (process.env.NODE_ENV === "production") {
-  mongoose.connect(uri);
-} else {
-  if (!globalThis.__mongooseConnection) {
-    globalThis.__mongooseConnection = mongoose;
-    mongoose.connect(uri);
+export async function connectDB() {
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
+  if (process.env.NODE_ENV === "production") {
+    return mongoose.connect(uri);
+  } else {
+    if (!globalThis.__mongooseConnection) {
+      globalThis.__mongooseConnection = mongoose;
+      await mongoose.connect(uri);
+    }
+    return mongoose.connection;
   }
 }
 
